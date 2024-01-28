@@ -1,105 +1,79 @@
 package gofs
 
-type FS struct {
-	path string
+type FS string
+
+func (F FS) String() string {
+	return string(F)
 }
 
-func File(path string) IFile {
-	return nil
-}
-
-func Dir(path string) Directory {
-	return nil
-}
-
-func FSys(path string) FileSystem {
-	return nil
-}
-
-type FileSystem interface {
-	//common functionality for both file and directory
-	Copy(source, destination string) error
-	Move(source, destination string) error
-	Delete(path string) error
-	Rename(path, newName string) error
-	Exits(path string) bool
-	AbsPath(path string) string
-	ParentPath(path string) string
-	Name(path string) string
-	IsValidPath(path string) bool
-	OnSameDir(path1, path2 string) bool
-}
-
-type IFile interface {
+// FS will implement the FileSystemPrototype interface for any type of file or directory
+type FileSystemPrototype interface {
 	Name() string
-	Parent() Directory
-	Path() string
-	Ext() string
+	IsValidPath() bool
+	Abs() FileSystemPrototype
+	Rel() FileSystemPrototype
+	Parent() FileSystemPrototype
+	IsDir() bool
+	IsFile() bool
+	Exists() bool
+	IsChildOf(path FS) bool
+	IsAbs() bool
+	IsRel() bool
+	IsSame(path FS) bool
+	IsDescendantOf(path FS) bool
+	IsSiblingOf(path FS) bool
+	Stat() any        /* Not implemented yet */
+	Permissions() any /* Not implemented yet */
+	Owner() any       /* Not implemented yet */
+	IsReadable() bool
+	IsWritable() bool
+	IsExecutable() bool
+	IsHidden() bool
+	Copy(newPath FS) error
+	Move(newPath FS) error
+	Rename(newName string) error
+	Delete() error
 	Size() int64
-	LastModified() int64
-	LastAccessed() int64
-	LastChanged() int64
-	FullPath() string
-	FileSystem() FileSystem
-	Delete() error
-	Rename(newName string) error
-	Move(newParent Directory) error
-	Copy(newParent Directory) error
-	IsRoot() bool
-	IsChildOf(parent Directory) bool
-	IsSameAs(other IFile) bool
-	IsDescendantOf(ancestor Directory) bool
-	IsAncestorOf(descendant Directory) bool
-	IsParentOf(child Directory) bool
-	IsSiblingOf(sibling IFile) bool
-	IsRelativeOf(relative Directory) bool
-	IsRelativeOfPath(path string) bool
-	Exists() bool
 }
 
-type Directory interface {
-	Name() string
-	Parent() Directory
-	Child(name string) Directory
-	Children() []Directory
-	Files() []IFile
-	Path() string
-	FullPath() string
-	FileSystem() FileSystem
-	CreateDirectory(name string) Directory
-	CreateFile(name string) IFile
-	Delete() error
-	DeleteDirectory(name string) error
-	DeleteFile(name string) error
-	Rename(newName string) error
-	Move(newParent Directory) error
-	Copy(newParent Directory) error
-	IsRoot() bool
-	IsChildOf(parent Directory) bool
-	IsSameAs(other Directory) bool
-	IsDescendantOf(ancestor Directory) bool
-	IsAncestorOf(descendant Directory) bool
-	IsParentOf(child Directory) bool
-	IsSiblingOf(sibling Directory) bool
-	IsRelativeOf(relative Directory) bool
-	IsRelativeOfPath(path string) bool
-	Exists() bool
-	DirectoryExists(name string) bool
-	FileExists(name string) bool
-	DirectoryExistsPath(path string) bool
-	FileExistsPath(path string) bool
-	DirectoryPath(path string) Directory
-	FilePath(path string) IFile
-	DirectoryPathCreate(path string) Directory
-	FilePathCreate(path string) IFile
-	DirectoryPathCreateAll(path string) Directory
-	FilePathCreateAll(path string) IFile
-	DirectoryPathCreateAllIfNotExists(path string) Directory
-	FilePathCreateAllIfNotExists(path string) IFile
-	DirectoryPathCreateIfNotExists(path string) Directory
-	FilePathCreateIfNotExists(path string) IFile
-	DirectoryPathCreateIfNotExistsAll(path string) Directory
-	FilePathCreateIfNotExistsAll(path string) IFile
-	DirectoryPathCreateAllIfNotExistsAll(path string) Directory
-	FilePathCreateAllIfNotExistsAll(path string) IFile
+// this is only for files. FS will implement this too
+type FileProto interface {
+	Ext() string
+	Read() ([]byte, error)
+	ReadAll() ([]byte, error)
+	ReadString() (string, error)
+	ReadLines() ([]string, error)
+	Write(data []byte) error
+	WriteAll(data []byte) error
+	WriteString(data string) error
+	WriteLines(data []string) error
+	Append(data []byte) error
+	AppendAll(data []byte) error
+	AppendString(data string) error
+	AppendLines(data []string) error
+	ReadStream() (any, error)
+	WriteStream() (any, error)
+}
+
+// this is only for directories. FS will implement this too
+type DirectoryProto interface {
+	GetFiles() []FileProto
+	GetFilesFiltered() []FileProto
+	GetFile(name FS) FileProto
+	GetDirectories() []DirectoryProto
+	GetDirectory(name FS) DirectoryProto
+	GetDirectoriesFiltered() []DirectoryProto
+	GetAll() []FS
+	GetRecursiveFiles() []FileProto
+	GetRecursiveDirectories() []DirectoryProto
+	GetAllRecursive() []FileProto
+	GetFilesRecursiveFiltered(filter func(FileProto) bool) []FileProto
+	GetDirectoriesRecursiveFiltered(filter func(DirectoryProto) bool) []DirectoryProto
+	GetRecursiveFiltered(filter func(FS) bool) []FS
+	CreateRecursiveFolder(path FS) error
+	CreateFolder(path FS) error
+	CreateFile(path FS) error
+	CreateFileWithData(path FS, data []byte) error
+	CreateFileWithString(path FS, data string) error
+	CreateFileWithLines(path FS, data []string) error
 }
