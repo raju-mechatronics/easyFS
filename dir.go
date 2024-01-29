@@ -1,13 +1,5 @@
 package gofs
 
-type Dir struct {
-	path string
-}
-
-func (D Dir) String() string {
-	return D.path
-}
-
 type Directory interface {
 	Name() string
 	Parent() Directory
@@ -53,4 +45,27 @@ type Directory interface {
 	FilePathCreateIfNotExistsAll(path string) FilePrototype
 	DirectoryPathCreateAllIfNotExistsAll(path string) Directory
 	FilePathCreateAllIfNotExistsAll(path string) FilePrototype
+}
+
+// this is only for directories. FS will implement this too
+type DirectoryProto interface {
+	GetFiles() []FileProto
+	GetFilesFiltered() []FileProto
+	GetFile(name FS) FileProto
+	GetDirectories() []DirectoryProto
+	GetDirectory(name FS) DirectoryProto
+	GetDirectoriesFiltered() []DirectoryProto
+	GetAll() []FS
+	GetRecursiveFiles() []FileProto
+	GetRecursiveDirectories() []DirectoryProto
+	GetAllRecursive() []FileProto
+	GetFilesRecursiveFiltered(filter func(FileProto) bool) []FileProto
+	GetDirectoriesRecursiveFiltered(filter func(DirectoryProto) bool) []DirectoryProto
+	GetRecursiveFiltered(filter func(FS) bool) []FS
+	CreateRecursiveFolder(path FS) error
+	CreateFolder(path FS) error
+	CreateFile(path FS) error
+	CreateFileWithData(path FS, data []byte) error
+	CreateFileWithString(path FS, data string) error
+	CreateFileWithLines(path FS, data []string) error
 }

@@ -1,12 +1,5 @@
 package gofs
 
-type File struct {
-	path string
-}
-
-func (F File) String() string {
-	return F.path
-}
 
 type FilePrototype interface {
 	Name() string
@@ -33,4 +26,22 @@ type FilePrototype interface {
 	IsRelativeOf(relative Directory) bool
 	IsRelativeOfPath(path string) bool
 	Exists() bool
+}
+
+// this is only for files. FS will implement this too
+type FileProto interface {
+	Read() ([]byte, error)
+	ReadAll() ([]byte, error)
+	ReadString() (string, error)
+	ReadLines() ([]string, error)
+	Write(data []byte) error
+	WriteAll(data []byte) error
+	WriteString(data string) error
+	WriteLines(data []string) error
+	Append(data []byte) error
+	AppendAll(data []byte) error
+	AppendString(data string) error
+	AppendLines(data []string) error
+	ReadStream() (any, error)
+	WriteStream() (any, error)
 }
