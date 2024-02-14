@@ -1,47 +1,89 @@
 package gofs
 
-
-type FilePrototype interface {
-	Name() string
-	Parent() Directory
-	Path() string
-	Ext() string
-	Size() int64
-	LastModified() int64
-	LastAccessed() int64
-	LastChanged() int64
-	FullPath() string
-	FileSystem() FileSystemPrototype
-	Delete() error
-	Rename(newName string) error
-	Move(newParent Directory) error
-	Copy(newParent Directory) error
-	IsRoot() bool
-	IsChildOf(parent Directory) bool
-	IsSameAs(other FilePrototype) bool
-	IsDescendantOf(ancestor Directory) bool
-	IsAncestorOf(descendant Directory) bool
-	IsParentOf(child Directory) bool
-	IsSiblingOf(sibling FilePrototype) bool
-	IsRelativeOf(relative Directory) bool
-	IsRelativeOfPath(path string) bool
-	Exists() bool
+type File struct {
+	PathHandler
 }
 
-// this is only for files. FS will implement this too
-type FileProto interface {
-	Read() ([]byte, error)
-	ReadAll() ([]byte, error)
-	ReadString() (string, error)
-	ReadLines() ([]string, error)
-	Write(data []byte) error
-	WriteAll(data []byte) error
-	WriteString(data string) error
-	WriteLines(data []string) error
-	Append(data []byte) error
-	AppendAll(data []byte) error
-	AppendString(data string) error
-	AppendLines(data []string) error
-	ReadStream() (any, error)
-	WriteStream() (any, error)
+func NewFile(path PathHandler) File {
+	return File{path}
+}
+
+func (f *File) Size() {
+
+}
+
+func (f *File) GetMetaData() {
+
+}
+
+func (f *File) Delete() {
+
+}
+
+func (f *File) Rename(newName string) {
+
+}
+
+func (f *File) Move(newPath PathHandler) {
+
+}
+
+func (f *File) Copy(newPath PathHandler) {
+
+}
+
+func (f *File) Create(overwrite bool) {
+
+}
+
+func (f *File) CreateIfNotExists() {
+
+}
+
+func (f *File) Read() ([]byte, error) {
+
+}
+
+func (f *File) ReadAll() ([]byte, error) {
+
+}
+
+func (f *File) ReadString() (string, error) {
+
+}
+
+func (f *File) ReadLines() ([]string, error) {
+
+}
+
+func (f *File) Write(data []byte) error {
+
+}
+
+func (f *File) WriteString(data string) error {
+
+}
+
+func (f *File) WriteLines(data []string) error {
+
+}
+
+func (f *File) Append(data []byte) error {
+
+}
+
+func (f *File) AppendString(data string, newLine bool) error {
+
+}
+
+func (f *File) AppendLine(data string) error {
+
+}
+
+func (f *File) ReadStream() (any, error) {
+
+}
+
+func (f *File) WriteStream() (any, error) {
+
 }
