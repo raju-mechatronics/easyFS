@@ -5,18 +5,6 @@ import (
 	"regexp"
 )
 
-//func IsValidDirNameUnix(name string) bool {
-//	// Regular expression to match invalid characters
-//	invalidCharsRegex := regexp.MustCompile(`[/\x00]`)
-//
-//	// Check if name contains invalid characters
-//	if invalidCharsRegex.MatchString(name) {
-//		return false
-//	}
-//
-//	return true
-//}
-
 func IsValidDirName(name string) bool {
 	// Regular expression to match invalid characters
 	invalidCharsRegex := regexp.MustCompile(`[<>:"/\\|?*\x00-\x1F]`)
