@@ -15,6 +15,7 @@ type DirStructure struct {
 }
 
 func (d *Dir) CreateIfNotExist() error {
+
 	if !d.Exists() {
 		return nil
 	} else {
@@ -93,14 +94,11 @@ func (d *Dir) Delete(recursive bool) error {
 
 }
 
-// delete the name dir that inside the dir d
-func (d *Dir) DeleteFile(name string) error {
-	// get the file
-	file := d.file
+func (d *Dir) DeleteSubFile(name string) error {
+
 }
 
-// delete the name file that inside the dir d
-func (d *Dir) DeleteDir(name string, recursive bool) error {
+func (d *Dir) DeleteSubDir(name string, recursive bool) error {
 
 }
 
