@@ -1,5 +1,7 @@
 package gofs
 
+import "os"
+
 type File struct {
 	PathHandler
 }
@@ -8,20 +10,25 @@ func NewFile(path PathHandler) File {
 	return File{path}
 }
 
-func (f *File) Size() {
-
+func (f *File) Size() (int64, error) {
+	// get the file size
+	stat, err := os.Stat(f.String())
+	return stat.Size(), err
 }
 
 func (f *File) GetMetaData() {
 
 }
 
-func (f *File) Delete() {
-
+func (f *File) Delete() error {
+	err := os.Remove(f.String())
+	return err
 }
 
-func (f *File) Rename(newName string) {
-
+func (f *File) Rename(newName string) error {
+	// rename
+	err := os.Rename(f.String(), newName)
+	return err
 }
 
 func (f *File) Move(newPath PathHandler) {
@@ -32,12 +39,20 @@ func (f *File) Copy(newPath PathHandler) {
 
 }
 
-func (f *File) Create(overwrite bool) {
-
+func (f *File) Create(overwrite bool) error {
+	if file, err := f.IsFile(); file && err != nil {
+		if overwrite {
+			f.Delete()
+		} else {
+			return nil
+		}
+	}
+	_, err := os.Create(f.String())
+	return err
 }
 
-func (f *File) CreateIfNotExists() {
-
+func (f *File) CreateIfNotExists() error {
+	return f.Create(false)
 }
 
 func (f *File) Read() ([]byte, error) {
