@@ -2,6 +2,7 @@ package gofs
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -32,6 +33,10 @@ func IsValidFileName(name string) bool {
 	}
 
 	return true
+}
+
+func Join(path string, names ...string) string {
+	return filepath.Join(append([]string{path}, names...)...)
 }
 
 func IsWindows() bool {

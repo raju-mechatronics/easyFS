@@ -89,21 +89,32 @@ func (d *Dir) Delete(recursive bool) error {
 		err := os.Remove(d.String())
 		return err
 	} else {
-
+		err := os.RemoveAll(d.String())
+		return err
 	}
-
 }
 
 func (d *Dir) DeleteSubFile(name string) error {
-
+	isFile, err := d.IsFile()
+	if err != nil && isFile {
+		return os.Remove(d.String())
+	}
+	return err
 }
 
 func (d *Dir) DeleteSubDir(name string, recursive bool) error {
-
+	//delete the dir
+	if !recursive {
+		err := os.Remove(filepath.Join(d.String(), name))
+		return err
+	} else {
+		err := os.RemoveAll(filepath.Join(d.String(), name))
+		return err
+	}
 }
 
 // delete anything named name that inside the dir d
-func (d *Dir) DeleteAnything(name string, force bool) error {
+func (d *Dir) DeleteAnything(match string, force bool) error {
 }
 
 func (d *Dir) Rename(newName string) error {
