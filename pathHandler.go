@@ -211,3 +211,11 @@ func (p *PathHandler) IsDescendantOf(other PathHandler) bool {
 	}
 	return strings.HasPrefix(f, o)
 }
+
+func (p *PathHandler) DeletePath(force bool) error {
+	if force {
+		return os.RemoveAll(p.String())
+	} else {
+		return os.Remove(p.String())
+	}
+}

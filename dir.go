@@ -123,11 +123,72 @@ func (d *Dir) Rename(newName string) error {
 	return err
 }
 
-func (d *Dir) Move(recursive bool) error {
+func (d *Dir) Move(newPath PathHandler, recursive bool) error {
+	oldPath := d.String()
+	newPathStr := newPath.String()
 
+	// Check if the directory exists
+	isDir, err := d.IsDir()
+	if err != nil {
+		return err
+	}
+	if !isDir {
+		return os.ErrNotExist
+	}
+
+	// Create the new directory
+	err = os.MkdirAll(newPathStr, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	// Walk through the old directory and move its contents to the new directory
+	err = filepath.Walk(oldPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// Construct the new path for the current item
+		relativePath, err := filepath.Rel(oldPath, path)
+		if err != nil {
+			return err
+		}
+		newItemPath := filepath.Join(newPathStr, relativePath)
+
+		// If it's a directory and recursive is true, create it in the new path
+		if info.IsDir() {
+			if recursive {
+				err := os.MkdirAll(newItemPath, info.Mode())
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			// Move the file
+			err := os.Rename(path, newItemPath)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Remove the old directory if recursive is true
+	if recursive {
+		err = os.RemoveAll(oldPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (d *Dir) Copy(recursive bool) error {
+	//copy the dir
 
 }
 
@@ -168,12 +229,23 @@ func (d *Dir) CreateDir(name string) Dir {
 	return dir
 }
 
-func (d *Dir) CreateFile(name string, overwrite bool) File {
+func (d *Dir) CreateFile(name string, overwrite bool) (File, error) {
 	// create the file inside d
+	file := NewFile(PathHandler(filepath.Join(d.String(), name)))
+	err := file.Create(overwrite)
+	if err != nil {
+		return File{}, err
+	}
+	return file, nil
 }
 
 func (d *Dir) CreateFileWithData(name string, data []byte, overwrite bool) File {
-
+	// create the file inside d
+	file := NewFile(PathHandler(filepath.Join(d.String(), name)))
+	err := file.Create(overwrite)
+	if err != nil {
+		return File{}
+	}
 }
 
 func (d *Dir) CreateFileWithString(name string, data string, overwrite bool) File {
@@ -188,6 +260,41 @@ func (d *Dir) GetAllPathExists() string {
 
 }
 
-func (d *Dir) Clear(force bool) {
+func (d *Dir) Clear(force bool) error {
+	// clear everything inside the dir but not the dir itself
+	if d.IsEmpty() {
+		return nil
+	} else {
+		if force {
+			err := d.Delete(true)
+			if err == nil {
+				return err
+			} else {
+				d.CreateIfNotExist()
+			}
+		} else {
+			paths, err := d.All()
+			if err != nil {
+				return err
+			}
+			for _, p := range paths {
+				p.DeletePath(false)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
 
+func (d *Dir) IsEmpty() bool {
+	// check if the dir is empty
+	// if it is empty return true
+	// else return false
+	entries, err := os.ReadDir(d.String())
+	if err != nil {
+		return false
+	}
+	return len(entries) == 0
 }
