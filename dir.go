@@ -215,24 +215,12 @@ func (d *Dir) Clear(force bool) error {
 	if d.IsEmpty() {
 		return nil
 	} else {
-		if force {
-			err := d.Delete(true)
-			if err == nil {
-				return err
-			} else {
-				d.CreateIfNotExist()
-			}
-		} else {
-			paths, err := d.All()
-			if err != nil {
-				return err
-			}
-			for _, p := range paths {
-				p.DeletePath(false)
-				if err != nil {
-					return err
-				}
-			}
+		all_entries, err := d.All()
+		if err != nil {
+			return err
+		}
+		for _, entry := range all_entries {
+			entry.DeletePath(force)
 		}
 	}
 	return nil
@@ -242,7 +230,7 @@ func (d *Dir) IsEmpty() bool {
 	// check if the dir is empty
 	// if it is empty return true
 	// else return false
-	entries, err := os.ReadDir(d.String())
+	entries, err := d.All()
 	if err != nil {
 		return false
 	}
