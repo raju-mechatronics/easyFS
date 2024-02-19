@@ -35,8 +35,8 @@ func IsValidFileName(name string) bool {
 	return true
 }
 
-func Join(path string, names ...string) string {
-	return filepath.Join(append([]string{path}, names...)...)
+func Join(path string, names ...string) PathHandler {
+	return PathHandler(filepath.Join(append([]string{path}, names...)...))
 }
 
 func IsWindows() bool {
