@@ -124,20 +124,22 @@ func (d *Dir) Copy(recursive bool) error {
 
 func (d *Dir) HasDir(name string) bool {
 	//check if the name exists in d and if it is a dir
-	stat, err := os.Stat(filepath.Join(d.String(), name))
-	if err != nil {
+	path := Join(d.String(), name)
+	if path.Exists() && path.IsDir() {
+		return true
+	} else {
 		return false
 	}
-	return stat.IsDir()
 }
 
 func (d *Dir) HasFile(name string) bool {
 	//check if the name exists in d and if it is a file
-	stat, err := os.Stat(filepath.Join(d.String(), name))
-	if err != nil {
+	path := Join(d.String(), name)
+	if path.Exists() && path.IsFile() {
+		return true
+	} else {
 		return false
 	}
-	return !stat.IsDir()
 }
 
 func (d *Dir) Find(match string, recursive bool, quantity int) []PathHandler {
@@ -154,14 +156,16 @@ func (d *Dir) FindDir(match string, recursive bool, quantity int) []Dir {
 
 func (d *Dir) CreateDir(name string) Dir {
 	//create the dir inside d
-	dir := Dir{PathHandler(filepath.Join(d.String(), name))}
+	path := PathHandler(filepath.Join(d.String(), name))
+	dir := path.Dir()
 	dir.CreateIfNotExist()
 	return dir
 }
 
 func (d *Dir) CreateFile(name string, overwrite bool) (File, error) {
 	// create the file inside d
-	file := NewFile(PathHandler(filepath.Join(d.String(), name)))
+	path := PathHandler(filepath.Join(d.String(), name))
+	file := path.File()
 	err := file.Create(overwrite)
 	if err != nil {
 		return File{}, err

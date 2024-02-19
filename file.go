@@ -32,15 +32,17 @@ func (f *File) Rename(newName string) error {
 }
 
 func (f *File) Move(newPath PathHandler) {
+	// move the file to the new path
 
 }
 
 func (f *File) Copy(newPath PathHandler) {
+	// copy the file to the new path
 
 }
 
 func (f *File) Create(overwrite bool) error {
-	if file, err := f.IsFile(); file && err != nil {
+	if f.IsFile() || f.Exists() {
 		if overwrite {
 			f.Delete()
 		} else {
@@ -56,7 +58,15 @@ func (f *File) CreateIfNotExists() error {
 }
 
 func (f *File) Read() ([]byte, error) {
-
+	// read the file
+	file, err := os.Open(f.String())
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	data := make([]byte, f.Size())
+	_, err = file.Read(data)
+	return data, err
 }
 
 func (f *File) ReadAll() ([]byte, error) {
