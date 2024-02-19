@@ -15,8 +15,7 @@ type DirStructure struct {
 }
 
 func (d *Dir) CreateIfNotExist() error {
-
-	if !d.Exists() {
+	if d.Exists() && d.IsDir() {
 		return nil
 	} else {
 		//create dir
@@ -42,42 +41,32 @@ func (d *Dir) All() ([]PathHandler, error) {
 }
 func (d *Dir) Files() ([]File, error) {
 	//get all files in dir
-	el, err := os.ReadDir(d.String())
+	el, err := d.All()
 	if err != nil {
 		return nil, err
 	}
 	files := []File{}
 	for _, e := range el {
-		//get the file path
-		path := d.String() + "/" + e.Name()
-		//check if it is a file
 		if e.IsDir() {
 			continue
 		}
-		//create file
-		file := NewFile(PathHandler(path))
-		files = append(files, file)
+		files = append(files, e.File())
 	}
 	return files, nil
 }
 
 func (d *Dir) Dirs() ([]Dir, error) {
 	//get all dirs in dir
-	el, err := os.ReadDir(d.String())
+	el, err := d.All()
 	if err != nil {
 		return nil, err
 	}
 	dirs := []Dir{}
 	for _, e := range el {
-		//get the file path
-		path := d.String() + "/" + e.Name()
-		//check if it is a dir
-		if !e.IsDir() {
+		if e.IsFile() {
 			continue
 		}
-		//create dir
-		dir := Dir{PathHandler(path)}
-		dirs = append(dirs, dir)
+		dirs = append(dirs, e.Dir())
 	}
 	return dirs, nil
 }
@@ -95,11 +84,11 @@ func (d *Dir) Delete(recursive bool) error {
 }
 
 func (d *Dir) DeleteSubFile(name string) error {
-	isFile, err := d.IsFile()
-	if err != nil && isFile {
+	isFile := d.IsFile()
+	if isFile {
 		return os.Remove(d.String())
 	}
-	return err
+	return
 }
 
 func (d *Dir) DeleteSubDir(name string, recursive bool) error {
@@ -252,8 +241,24 @@ func (d *Dir) CreateFileWithString(name string, data string, overwrite bool) Fil
 
 }
 
-func (d *Dir) GetTree() DirStructure {
+func getTree(p Dir) DirStructure {
+	allEntry, err := p.All()
+	if err != nil {
+		return DirStructure{}
+	}
+	tree := DirStructure{}
+	for _, entry := range allEntry {
+		if entry.IsDir() {
+			tree.Dirs[entry.String()] = getTree(entry.Dir())
+		} else {
+			tree.Files = append(tree.Files, entry.File())
+		}
+	}
+	return tree
+}
 
+func (d *Dir) GetTree() DirStructure {
+	return getTree(*d)
 }
 
 func (d *Dir) GetAllPathExists() string {

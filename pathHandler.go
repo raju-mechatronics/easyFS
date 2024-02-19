@@ -10,6 +10,8 @@ import (
 // PathHandler represents a file path.
 type PathHandler string
 
+type PathInfo os.FileInfo
+
 // String returns the string representation of the path.
 func (p PathHandler) String() string {
 	return string(p)
@@ -45,12 +47,12 @@ func (p *PathHandler) Exists() bool {
 //
 //	path := gofs.PathHandler("/path/to/directory")
 //	isDir, err := path.IsDir() // true, nil if it's a directory, otherwise false, error
-func (p *PathHandler) IsDir() (bool, error) {
+func (p *PathHandler) IsDir() bool {
 	info, err := os.Stat(p.String())
 	if err != nil {
-		return false, err
+		return false
 	}
-	return info.IsDir(), nil
+	return info.IsDir()
 }
 
 // IsFile checks if the path is a file.
@@ -58,12 +60,12 @@ func (p *PathHandler) IsDir() (bool, error) {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	isFile, err := path.IsFile() // true, nil if it's a file, otherwise false, error
-func (p *PathHandler) IsFile() (bool, error) {
+func (p *PathHandler) IsFile() bool {
 	info, err := os.Stat(p.String())
 	if err != nil {
-		return false, err
+		return false
 	}
-	return !info.IsDir(), nil
+	return !info.IsDir()
 }
 
 // IsSymlink checks if the path is a symlink.
@@ -84,7 +86,7 @@ func (p *PathHandler) IsSymlink() (bool, error) {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	fileInfo, err := path.Stat() // returns FileInfo, nil if successful, otherwise error
-func (p *PathHandler) Stat() (os.FileInfo, error) {
+func (p *PathHandler) Stat() (PathInfo, error) {
 	return os.Stat(p.String())
 }
 
@@ -93,7 +95,7 @@ func (p *PathHandler) Stat() (os.FileInfo, error) {
 //
 //	path := gofs.PathHandler("/path/to/symlink")
 //	fileInfo, err := path.Lstat() // returns FileInfo, nil if successful, otherwise error
-func (p *PathHandler) Lstat() (os.FileInfo, error) {
+func (p *PathHandler) Lstat() (PathInfo, error) {
 	return os.Lstat(p.String())
 }
 
@@ -184,7 +186,13 @@ func (p *PathHandler) IsRel() bool {
 //	path2 := gofs.PathHandler("/path/to/directory2")
 //	isSameDir := path1.IsSameDir(path2) // true if they're the same directory, otherwise false
 func (p *PathHandler) IsSameDir(other PathHandler) bool {
-	return p.Abs() == other.Abs()
+	pabs, err := p.Abs()
+	oabs, oerr := other.Abs()
+
+	if err == nil || oerr == nil {
+		return false
+	}
+	return pabs == oabs
 }
 
 // IsSiblingOf checks if the path is a sibling of another path.
@@ -212,10 +220,21 @@ func (p *PathHandler) IsDescendantOf(other PathHandler) bool {
 	return strings.HasPrefix(f, o)
 }
 
+// Delete the path. if force is true it will delete recursive
 func (p *PathHandler) DeletePath(force bool) error {
 	if force {
 		return os.RemoveAll(p.String())
 	} else {
 		return os.Remove(p.String())
 	}
+}
+
+// File
+func (p *PathHandler) File() File {
+	return File{*p}
+}
+
+// Dir
+func (p *PathHandler) Dir() Dir {
+	return Dir{*p}
 }
