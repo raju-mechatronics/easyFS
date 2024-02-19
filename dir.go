@@ -206,8 +206,25 @@ func (d *Dir) GetTree() DirStructure {
 	return getTree(*d)
 }
 
-func (d *Dir) GetAllPathExists() string {
-
+func (d *Dir) GetAllPathExists() []PathHandler {
+	all, err := d.All()
+	if err != nil {
+		return []PathHandler{}
+	} else {
+		paths := []PathHandler{}
+		for _, entry := range all {
+			paths = append(paths, entry)
+			if entry.IsDir() {
+				// get all the path inside the dir
+				// and append to the all
+				// and return the all
+				entryDir := entry.Dir()
+				entryPaths := entryDir.GetAllPathExists()
+				paths = append(paths, entryPaths...)
+			}
+		}
+		return paths
+	}
 }
 
 func (d *Dir) Clear(force bool) error {
@@ -227,9 +244,6 @@ func (d *Dir) Clear(force bool) error {
 }
 
 func (d *Dir) IsEmpty() bool {
-	// check if the dir is empty
-	// if it is empty return true
-	// else return false
 	entries, err := d.All()
 	if err != nil {
 		return false
