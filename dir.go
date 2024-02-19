@@ -103,10 +103,6 @@ func (d *Dir) DeleteSubDir(name string, recursive bool) error {
 	}
 }
 
-// delete anything named name that inside the dir d
-func (d *Dir) DeleteAnything(match string, force bool) error {
-}
-
 func (d *Dir) Rename(newName string) error {
 	//rename the dir
 	err := os.Rename(d.String(), newName)
@@ -152,6 +148,10 @@ func (d *Dir) FindFile(match string, recursive bool, quantity int) []File {
 
 func (d *Dir) FindDir(match string, recursive bool, quantity int) []Dir {
 
+}
+
+// delete anything named name that inside the dir d
+func (d *Dir) DeleteAnything(match string, force bool) error {
 }
 
 func (d *Dir) CreateDir(name string) Dir {
