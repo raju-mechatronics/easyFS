@@ -105,12 +105,16 @@ func (d *Dir) DeleteSubDir(name string, recursive bool) error {
 
 func (d *Dir) Rename(newName string) error {
 	//rename the dir
-	err := os.Rename(d.String(), newName)
+	err := os.Rename(d.String(), filepath.Join(d.Parent(), newName))
 	return err
 }
 
-func (d *Dir) Move(newPath PathHandler, recursive bool) error {
-
+func (d *Dir) Move(newPath PathHandler) error {
+	// get the name
+	name := d.Name()
+	//move the dir
+	err := os.Rename(d.String(), filepath.Join(newPath.String(), name))
+	return err
 }
 
 func (d *Dir) Copy(recursive bool) error {
