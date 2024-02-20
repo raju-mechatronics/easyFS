@@ -14,7 +14,7 @@ type DirStructure struct {
 	Files []File
 }
 
-func (d *Dir) CreateIfNotExist() error {
+func (d Dir) CreateIfNotExist() error {
 	if d.Exists() && d.IsDir() {
 		return nil
 	} else {
@@ -103,21 +103,7 @@ func (d *Dir) DeleteSubDir(name string, recursive bool) error {
 	}
 }
 
-func (d *Dir) Rename(newName string) error {
-	//rename the dir
-	err := os.Rename(d.String(), filepath.Join(d.Parent(), newName))
-	return err
-}
-
-func (d *Dir) Move(newPath PathHandler) error {
-	// get the name
-	name := d.Name()
-	//move the dir
-	err := os.Rename(d.String(), filepath.Join(newPath.String(), name))
-	return err
-}
-
-func (d *Dir) Copy(recursive bool) error {
+func (d *Dir) Copy() error {
 	//copy the dir
 
 }
