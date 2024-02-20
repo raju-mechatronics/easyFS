@@ -1,6 +1,11 @@
 package gofs
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"syscall"
+)
 
 type File struct {
 	PathHandler
@@ -25,20 +30,42 @@ func (f *File) Delete() error {
 	return err
 }
 
-func (f *File) Rename(newName string) error {
-	// rename
-	err := os.Rename(f.String(), newName)
-	return err
-}
-
-func (f *File) Move(newPath PathHandler) {
-	// move the file to the new path
-
-}
-
-func (f *File) Copy(newPath PathHandler) {
+func (f *File) Copy(destPath PathHandler) error {
 	// copy the file to the new path
+	destDir := destPath.Dir()
+	err := destDir.CreateIfNotExist()
+	if err != nil {
+		return err
+	}
+	srcFile, err := os.Open(f.String())
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
 
+	dstFile, err := os.Create(filepath.Join(destPath.String(), f.Name()))
+	if err != nil {
+		return fmt.Errorf("creating destination file: %w", err)
+	}
+	defer dstFile.Close()
+
+	// Allocate a buffer
+	buf := make([]byte, 4096)
+	for {
+		n, err := syscall.Read(syscall.Handle(int(srcFile.Fd())), buf)
+		if err != nil {
+			return fmt.Errorf("reading from source file: %w", err)
+		}
+		if n == 0 {
+			break // EOF
+		}
+		_, err = syscall.Write(syscall.Handle(int(dstFile.Fd())), buf[:n])
+		if err != nil {
+			return fmt.Errorf("writing to destination file: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (f *File) Create(overwrite bool) error {
@@ -58,15 +85,7 @@ func (f *File) CreateIfNotExists() error {
 }
 
 func (f *File) Read() ([]byte, error) {
-	// read the file
-	file, err := os.Open(f.String())
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	data := make([]byte, f.Size())
-	_, err = file.Read(data)
-	return data, err
+
 }
 
 func (f *File) ReadAll() ([]byte, error) {
@@ -89,7 +108,7 @@ func (f *File) WriteString(data string) error {
 
 }
 
-func (f *File) WriteLines(data []string) error {
+func (f *File) WriteLine(data []string) error {
 
 }
 
