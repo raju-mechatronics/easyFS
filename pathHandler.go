@@ -3,7 +3,6 @@ package gofs
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -106,14 +105,7 @@ func (p *PathHandler) Lstat() (PathInfo, error) {
 //	isAbsolute := path.IsAbs() // true if it's an absolute path, otherwise false
 func (p *PathHandler) IsAbs() bool {
 	path := string(*p)
-	if path == "" || strings.HasPrefix(path, ".") {
-		return false
-	}
-	if IsWindows() {
-		absRegex := regexp.MustCompile(`(^[A-Za-z]:(\/\/|\\\\))`)
-		return absRegex.MatchString(path)
-	}
-	return strings.HasPrefix(path, "/") || strings.HasPrefix(path, "~")
+	return filepath.IsAbs(path)
 }
 
 // Resolve resolves the path to an absolute path.
