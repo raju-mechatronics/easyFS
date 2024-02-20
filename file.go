@@ -86,20 +86,22 @@ func (f *File) CreateIfNotExists() error {
 }
 
 func (f *File) Read() ([]byte, error) {
-	log.Fatal("Not implemented")
-	return nil, nil
+
 }
 
-func (f *File) ReadAll() ([]byte, error) {
-	log.Fatal("Not implemented")
-	return nil, nil
+func (f *File) ChunkReader() (func(size int32) ([]byte, error), error) {
+
 }
 
 func (f *File) ReadString() (string, error) {
 
 }
 
-func (f *File) ReadLines() ([]string, error) {
+func (f *File) ReadStringChunk() (func(size int32) (string, error), error) {
+
+}
+
+func (f *File) IterateLine() (func() (string, error), error) {
 
 }
 
@@ -111,10 +113,6 @@ func (f *File) WriteString(data string) error {
 
 }
 
-func (f *File) WriteLine(data []string) error {
-
-}
-
 func (f *File) Append(data []byte) error {
 
 }
@@ -123,8 +121,11 @@ func (f *File) AppendString(data string, newLine bool) error {
 
 }
 
-func (f *File) AppendLine(data string) error {
+func (f *File) AppendIterative() (func(data []byte) error, error) {
 
+}
+
+func (f *File) AppendStringIterative() (func(data string) error, error) {
 }
 
 func (f *File) ReadStream() (any, error) {
