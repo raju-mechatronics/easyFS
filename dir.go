@@ -129,19 +129,77 @@ func (d *Dir) HasFile(name string) bool {
 }
 
 func (d *Dir) Find(match string, recursive bool, quantity int) []PathHandler {
-
+	if quantity == 0 {
+		return []PathHandler{}
+	} else {
+		paths := []PathHandler{}
+		d.forEach(recursive, func(p PathHandler) {
+			matched, err := filepath.Match(match, p.String())
+			if matched {
+				paths = append(paths, p)
+				quantity--
+			}
+			if quantity == 0 || err != nil {
+				return
+			}
+		})
+		return paths
+	}
 }
 
 func (d *Dir) FindFile(match string, recursive bool, quantity int) []File {
+	// find the file in the dir
+	if quantity == 0 {
+		return []File{}
+	} else {
+		files := []File{}
+		d.forEach(recursive, func(p PathHandler) {
+			matched, err := filepath.Match(match, p.String())
+			if matched && p.IsFile() {
+				files = append(files, p.File())
+				quantity--
+			}
+			if quantity == 0 || err != nil {
+				return
+			}
+		})
+		return files
+	}
 
 }
 
 func (d *Dir) FindDir(match string, recursive bool, quantity int) []Dir {
-
+	// find the dir in the dir
+	if quantity == 0 {
+		return []Dir{}
+	} else {
+		dirs := []Dir{}
+		d.forEach(recursive, func(p PathHandler) {
+			matched, err := filepath.Match(match, p.String())
+			if matched && p.IsDir() {
+				dirs = append(dirs, p.Dir())
+				quantity--
+			}
+			if quantity == 0 || err != nil {
+				return
+			}
+		})
+		return dirs
+	}
 }
 
-// delete anything named name that inside the dir d
-func (d *Dir) DeleteAnything(match string, force bool) error {
+func (d Dir) forEach(recursive bool, handler func(PathHandler)) {
+	entries, err := d.All()
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		handler(entry)
+		if entry.IsDir() && recursive {
+			entryDir := entry.Dir()
+			entryDir.forEach(recursive, handler)
+		}
+	}
 }
 
 func (d *Dir) CreateDir(name string) Dir {
