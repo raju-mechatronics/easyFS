@@ -127,11 +127,3 @@ func (f *File) AppendIterative() (func(data []byte) error, error) {
 
 func (f *File) AppendStringIterative() (func(data string) error, error) {
 }
-
-func (f *File) ReadStream() (any, error) {
-
-}
-
-func (f *File) WriteStream() (any, error) {
-
-}
