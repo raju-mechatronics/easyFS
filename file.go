@@ -2,6 +2,7 @@ package gofs
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -22,7 +23,7 @@ func (f *File) Size() (int64, error) {
 }
 
 func (f *File) GetMetaData() {
-
+	log.Fatal("Not implemented")
 }
 
 func (f *File) Delete() error {
@@ -52,14 +53,14 @@ func (f *File) Copy(destPath PathHandler) error {
 	// Allocate a buffer
 	buf := make([]byte, 4096)
 	for {
-		n, err := syscall.Read(syscall.Handle(int(srcFile.Fd())), buf)
+		n, err := syscall.Read(int(srcFile.Fd()), buf)
 		if err != nil {
 			return fmt.Errorf("reading from source file: %w", err)
 		}
 		if n == 0 {
 			break // EOF
 		}
-		_, err = syscall.Write(syscall.Handle(int(dstFile.Fd())), buf[:n])
+		_, err = syscall.Write(int(dstFile.Fd()), buf[:n])
 		if err != nil {
 			return fmt.Errorf("writing to destination file: %w", err)
 		}
@@ -85,11 +86,13 @@ func (f *File) CreateIfNotExists() error {
 }
 
 func (f *File) Read() ([]byte, error) {
-
+	log.Fatal("Not implemented")
+	return nil, nil
 }
 
 func (f *File) ReadAll() ([]byte, error) {
-
+	log.Fatal("Not implemented")
+	return nil, nil
 }
 
 func (f *File) ReadString() (string, error) {
