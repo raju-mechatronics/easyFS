@@ -21,7 +21,7 @@ func (p PathHandler) String() string {
 //
 //	path := gofs.PathHandler("/path/to/directory")
 //	isValid := path.IsValidPath() // true
-func (p *PathHandler) IsValidPath() bool {
+func (p PathHandler) IsValidPath() bool {
 	names := strings.Split(p.String(), string(os.PathSeparator))
 	for _, name := range names {
 		if !IsValidDirName(name) {
@@ -36,7 +36,7 @@ func (p *PathHandler) IsValidPath() bool {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	exists := path.Exists() // true if the file exists, otherwise false
-func (p *PathHandler) Exists() bool {
+func (p PathHandler) Exists() bool {
 	_, err := os.Stat(p.String())
 	return err == nil
 }
@@ -46,7 +46,7 @@ func (p *PathHandler) Exists() bool {
 //
 //	path := gofs.PathHandler("/path/to/directory")
 //	isDir, err := path.IsDir() // true, nil if it's a directory, otherwise false, error
-func (p *PathHandler) IsDir() bool {
+func (p PathHandler) IsDir() bool {
 	info, err := os.Stat(p.String())
 	if err != nil {
 		return false
@@ -59,7 +59,7 @@ func (p *PathHandler) IsDir() bool {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	isFile, err := path.IsFile() // true, nil if it's a file, otherwise false, error
-func (p *PathHandler) IsFile() bool {
+func (p PathHandler) IsFile() bool {
 	info, err := os.Stat(p.String())
 	if err != nil {
 		return false
@@ -72,7 +72,7 @@ func (p *PathHandler) IsFile() bool {
 //
 //	path := gofs.PathHandler("/path/to/symlink")
 //	isSymlink, err := path.IsSymlink() // true, nil if it's a symlink, otherwise false, error
-func (p *PathHandler) IsSymlink() (bool, error) {
+func (p PathHandler) IsSymlink() (bool, error) {
 	info, err := os.Lstat(p.String())
 	if err != nil {
 		return false, err
@@ -85,7 +85,7 @@ func (p *PathHandler) IsSymlink() (bool, error) {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	fileInfo, err := path.Stat() // returns FileInfo, nil if successful, otherwise error
-func (p *PathHandler) Stat() (PathInfo, error) {
+func (p PathHandler) Stat() (PathInfo, error) {
 	return os.Stat(p.String())
 }
 
@@ -94,7 +94,7 @@ func (p *PathHandler) Stat() (PathInfo, error) {
 //
 //	path := gofs.PathHandler("/path/to/symlink")
 //	fileInfo, err := path.Lstat() // returns FileInfo, nil if successful, otherwise error
-func (p *PathHandler) Lstat() (PathInfo, error) {
+func (p PathHandler) Lstat() (PathInfo, error) {
 	return os.Lstat(p.String())
 }
 
@@ -103,8 +103,8 @@ func (p *PathHandler) Lstat() (PathInfo, error) {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	isAbsolute := path.IsAbs() // true if it's an absolute path, otherwise false
-func (p *PathHandler) IsAbs() bool {
-	path := string(*p)
+func (p PathHandler) IsAbs() bool {
+	path := string(p)
 	return filepath.IsAbs(path)
 }
 
@@ -114,7 +114,11 @@ func (p *PathHandler) IsAbs() bool {
 //	path := gofs.PathHandler("./path/to/file.txt")
 //	resolvedPath, err := path.Resolve() // returns the resolved absolute path, nil if successful, otherwise error
 func (p *PathHandler) Resolve() (string, error) {
-	return filepath.Abs(p.String())
+	rPath, err := filepath.Abs(p.String())
+	if err == nil {
+		*p = PathHandler(rPath)
+	}
+	return rPath, err
 }
 
 // Abs returns the absolute path of the path.
@@ -122,7 +126,7 @@ func (p *PathHandler) Resolve() (string, error) {
 //
 //	path := gofs.PathHandler("./path/to/file.txt")
 //	absPath, err := path.Abs() // returns the absolute path, nil if successful, otherwise error
-func (p *PathHandler) Abs() (string, error) {
+func (p PathHandler) Abs() (string, error) {
 	return filepath.Abs(p.String())
 }
 
@@ -131,7 +135,7 @@ func (p *PathHandler) Abs() (string, error) {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	name := path.Name() // returns "file.txt"
-func (p *PathHandler) Name() string {
+func (p PathHandler) Name() string {
 	return filepath.Base(p.String())
 }
 
@@ -140,7 +144,7 @@ func (p *PathHandler) Name() string {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	parent := path.Parent() // returns "/path/to"
-func (p *PathHandler) Parent() string {
+func (p PathHandler) Parent() string {
 	return filepath.Dir(p.String())
 }
 
@@ -149,7 +153,7 @@ func (p *PathHandler) Parent() string {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	ext := path.Ext() // returns ".txt"
-func (p *PathHandler) Ext() string {
+func (p PathHandler) Ext() string {
 	return filepath.Ext(p.String())
 }
 
@@ -158,7 +162,7 @@ func (p *PathHandler) Ext() string {
 //
 //	path := gofs.PathHandler("/path/to")
 //	newPath := path.Join("file.txt") // returns "/path/to/file.txt"
-func (p *PathHandler) Join(elem ...string) string {
+func (p PathHandler) Join(elem ...string) string {
 	return filepath.Join(append([]string{p.String()}, elem...)...)
 }
 
@@ -167,7 +171,7 @@ func (p *PathHandler) Join(elem ...string) string {
 //
 //	path := gofs.PathHandler("./path/to/file.txt")
 //	isRelative := path.IsRel() // true if it's a relative path, otherwise false
-func (p *PathHandler) IsRel() bool {
+func (p PathHandler) IsRel() bool {
 	return !p.IsAbs()
 }
 
@@ -177,7 +181,7 @@ func (p *PathHandler) IsRel() bool {
 //	path1 := gofs.PathHandler("/path/to/directory1")
 //	path2 := gofs.PathHandler("/path/to/directory2")
 //	isSameDir := path1.IsSameDir(path2) // true if they're the same directory, otherwise false
-func (p *PathHandler) IsSameDir(other PathHandler) bool {
+func (p PathHandler) IsSameDir(other PathHandler) bool {
 	pabs, err := p.Abs()
 	oabs, oerr := other.Abs()
 
@@ -193,7 +197,7 @@ func (p *PathHandler) IsSameDir(other PathHandler) bool {
 //	path1 := gofs.PathHandler("/path/to/directory1")
 //	path2 := gofs.PathHandler("/path/to/directory2/subdir")
 //	isSibling := path1.IsSiblingOf(path2) // true if they're siblings, otherwise false
-func (p *PathHandler) IsSiblingOf(other PathHandler) bool {
+func (p PathHandler) IsSiblingOf(other PathHandler) bool {
 	return p.Parent() == other.Parent()
 }
 
@@ -203,7 +207,7 @@ func (p *PathHandler) IsSiblingOf(other PathHandler) bool {
 //	path1 := gofs.PathHandler("/path/to/directory1/subdir")
 //	path2 := gofs.PathHandler("/path/to/directory2")
 //	isDescendant := path1.IsDescendantOf(path2) // true if path1 is a descendant of path2, otherwise false
-func (p *PathHandler) IsDescendantOf(other PathHandler) bool {
+func (p PathHandler) IsDescendantOf(other PathHandler) bool {
 	f, e1 := p.Abs()
 	o, e2 := other.Abs()
 	if e1 != nil || e2 != nil {
@@ -213,7 +217,7 @@ func (p *PathHandler) IsDescendantOf(other PathHandler) bool {
 }
 
 // Delete the path. if force is true it will delete recursive
-func (p *PathHandler) DeletePath(force bool) error {
+func (p PathHandler) DeletePath(force bool) error {
 	if force {
 		return os.RemoveAll(p.String())
 	} else {
@@ -222,11 +226,33 @@ func (p *PathHandler) DeletePath(force bool) error {
 }
 
 // File
-func (p *PathHandler) File() File {
-	return File{*p}
+func (p PathHandler) File() File {
+	return File{p}
 }
 
 // Dir
-func (p *PathHandler) Dir() Dir {
-	return Dir{*p}
+func (p PathHandler) Dir() Dir {
+	return Dir{p}
+}
+
+func (p *PathHandler) Rename(newName string) error {
+	//rename the dir
+	err := os.Rename(p.String(), string(Join(p.Parent(), newName)))
+	if err == nil {
+		newHandler := Join(p.Parent(), newName)
+		*p = newHandler
+	}
+	return err
+}
+
+func (p *PathHandler) Move(newPath PathHandler) error {
+	// get the name
+	name := p.Name()
+	//move the dir
+	dest := Join(newPath.String(), name)
+	err := os.Rename(p.String(), dest.String())
+	if err == nil {
+		*p = dest
+	}
+	return err
 }
