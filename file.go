@@ -1,11 +1,8 @@
 package gofs
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"syscall"
 )
 
 type File struct {
@@ -38,33 +35,8 @@ func (f *File) Copy(destPath PathHandler) error {
 	if err != nil {
 		return err
 	}
-	srcFile, err := os.Open(f.String())
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	dstFile, err := os.Create(filepath.Join(destPath.String(), f.Name()))
-	if err != nil {
-		return fmt.Errorf("creating destination file: %w", err)
-	}
-	defer dstFile.Close()
-
-	// Allocate a buffer
-	buf := make([]byte, 4096)
-	for {
-		n, err := syscall.Read(int(srcFile.Fd()), buf)
-		if err != nil {
-			return fmt.Errorf("reading from source file: %w", err)
-		}
-		if n == 0 {
-			break // EOF
-		}
-		_, err = syscall.Write(int(dstFile.Fd()), buf[:n])
-		if err != nil {
-			return fmt.Errorf("writing to destination file: %w", err)
-		}
-	}
+	//srcFile, err := os.Open(f.String())
+	//srcFile.Wri
 
 	return nil
 }
@@ -86,7 +58,11 @@ func (f *File) CreateIfNotExists() error {
 }
 
 func (f *File) Read() ([]byte, error) {
-
+	if f.Exists() && f.IsFile() {
+		data, err := os.ReadFile(f.String())
+		return data, err
+	}
+	return nil, os.ErrNotExist
 }
 
 func (f *File) ChunkReader() (func(size int32) ([]byte, error), error) {
@@ -126,4 +102,21 @@ func (f *File) AppendIterative() (func(data []byte) error, error) {
 }
 
 func (f *File) AppendStringIterative() (func(data string) error, error) {
+}
+
+type Reader struct {
+	file *os.File
+}
+
+func ReadFile(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// read string from file without ioutil
+	data, err := file.Read()
+	file.ReadFrom()
+
 }

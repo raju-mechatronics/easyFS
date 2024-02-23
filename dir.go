@@ -71,7 +71,6 @@ func (d *Dir) Dirs() ([]Dir, error) {
 	return dirs, nil
 }
 
-// delete the dir d
 func (d *Dir) Delete(recursive bool) error {
 	//delete the dir
 	if !recursive {
