@@ -1,7 +1,7 @@
 package gofs
 
 import (
-	"log"
+	"io"
 	"os"
 )
 
@@ -19,26 +19,34 @@ func (f *File) Size() (int64, error) {
 	return stat.Size(), err
 }
 
-func (f *File) GetMetaData() {
-	log.Fatal("Not implemented")
-}
-
 func (f *File) Delete() error {
 	err := os.Remove(f.String())
 	return err
 }
 
-func (f *File) Copy(destPath PathHandler) error {
+func (f *File) Copy(destDir Dir) (File, error) {
 	// copy the file to the new path
-	destDir := destPath.Dir()
+	var srcFile *os.File
+	if f.Exists() && f.IsFile() {
+		var err error
+		srcFile, err = os.Open(f.String())
+		if err != nil {
+			return File{}, err
+		}
+	} else {
+		return File{}, os.ErrNotExist
+	}
 	err := destDir.CreateIfNotExist()
 	if err != nil {
-		return err
+		return File{}, err
 	}
-	//srcFile, err := os.Open(f.String())
-	//srcFile.Wri
-
-	return nil
+	destFilePath := Join(destDir.String(), f.Name())
+	destFile, err := os.Create(destFilePath.String())
+	if err != nil {
+		return File{}, err
+	}
+	_, err = io.Copy(destFile, srcFile)
+	return destFilePath.File(), nil
 }
 
 func (f *File) Create(overwrite bool) error {
@@ -65,12 +73,32 @@ func (f *File) Read() ([]byte, error) {
 	return nil, os.ErrNotExist
 }
 
-func (f *File) ChunkReader() (func(size int32) ([]byte, error), error) {
-
+func (f *File) ChunkReader(size int64) (func() ([]byte, error, bool), func() error, error) {
+	if f.Exists() && f.IsFile() {
+		file, err := os.Open(f.String())
+		if err != nil {
+			return nil, nil, err
+		}
+		return func() ([]byte, error, bool) {
+				data := make([]byte, size)
+				n, err := file.Read(data)
+				if err != nil {
+					return data, err, true
+				}
+				return data[:n], err, false
+			}, func() error {
+				return file.Close()
+			}, nil
+	}
+	return nil, nil, os.ErrNotExist
 }
 
 func (f *File) ReadString() (string, error) {
-
+	if f.Exists() && f.IsFile() {
+		data, err := os.ReadFile(f.String())
+		return string(data), err
+	}
+	return "", os.ErrNotExist
 }
 
 func (f *File) ReadStringChunk() (func(size int32) (string, error), error) {
@@ -102,21 +130,4 @@ func (f *File) AppendIterative() (func(data []byte) error, error) {
 }
 
 func (f *File) AppendStringIterative() (func(data string) error, error) {
-}
-
-type Reader struct {
-	file *os.File
-}
-
-func ReadFile(path string) (string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	// read string from file without ioutil
-	data, err := file.Read()
-	file.ReadFrom()
-
 }
