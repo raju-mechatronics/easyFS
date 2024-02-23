@@ -1,6 +1,7 @@
 package gofs
 
 import (
+	"bufio"
 	"io"
 	"os"
 )
@@ -101,28 +102,59 @@ func (f *File) ReadString() (string, error) {
 	return "", os.ErrNotExist
 }
 
-func (f *File) ReadStringChunk() (func(size int32) (string, error), error) {
-
-}
-
 func (f *File) IterateLine() (func() (string, error), error) {
-
+	if f.Exists() && f.IsFile() {
+		file, err := os.Open(f.String())
+		if err != nil {
+			return nil, err
+		}
+		reader := bufio.NewReader(file)
+		return func() (string, error) {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				return line, err
+			}
+			return line[:len(line)-1], nil
+		}, nil
+	}
+	return nil, os.ErrNotExist
 }
 
-func (f *File) Write(data []byte) error {
-
+func (f *File) Write(data []byte, perm os.FileMode) error {
+	// write data to the file
+	err := os.WriteFile(f.String(), data, perm)
+	return err
 }
 
-func (f *File) WriteString(data string) error {
-
+func (f *File) WriteString(data string, perm os.FileMode) error {
+	return f.Write([]byte(data), perm)
 }
 
 func (f *File) Append(data []byte) error {
-
+	// append data to the file
+	err := os.WriteFile(f.String(), data, 0644)
+	return err
 }
 
 func (f *File) AppendString(data string, newLine bool) error {
+	// Open the file in append mode
+	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
+	// If newLine is true, add a newline character to the data
+	if newLine {
+		data += "\n"
+	}
+
+	// Write the data to the file
+	_, err = file.WriteString(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (f *File) AppendIterative() (func(data []byte) error, error) {
