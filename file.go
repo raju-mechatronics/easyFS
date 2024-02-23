@@ -84,6 +84,7 @@ func (f *File) ChunkReader(size int64) (func() ([]byte, error, bool), func() err
 				data := make([]byte, size)
 				n, err := file.Read(data)
 				if err != nil {
+					file.Close()
 					return data, err, true
 				}
 				return data[:n], err, false
@@ -158,8 +159,34 @@ func (f *File) AppendString(data string, newLine bool) error {
 }
 
 func (f *File) AppendIterative() (func(data []byte) error, error) {
+	// Open the file in append mode
+	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	return func(data []byte) error {
+		// Write the data to the file
+		_, err := file.Write(data)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, nil
 
 }
 
 func (f *File) AppendStringIterative() (func(data string) error, error) {
+	// Open the file in append mode
+	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	return func(data string) error {
+		// Write the data to the file
+		_, err := file.WriteString(data)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, nil
 }
