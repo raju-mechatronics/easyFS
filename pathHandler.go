@@ -256,3 +256,7 @@ func (p *PathHandler) Move(newPath PathHandler) error {
 	}
 	return err
 }
+
+func (p *PathHandler) SetPerm(perm os.FileMode) error {
+	return os.Chmod(p.String(), perm)
+}
