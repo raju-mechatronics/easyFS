@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 )
 
+// Dir represents a directory in the file system.
 type Dir struct {
 	PathHandler
 }
@@ -102,9 +103,35 @@ func (d *Dir) DeleteSubDir(name string, recursive bool) error {
 	}
 }
 
-func (d *Dir) Copy() error {
+func (d Dir) Copy(dest PathHandler) error {
 	//copy the dir
-
+	all, err := d.All()
+	if err != nil {
+		return err
+	}
+	destDir := dest.Dir()
+	err = destDir.CreateIfNotExist()
+	if err != nil {
+		return err
+	}
+	destDir, err = destDir.CreateDir(d.Name())
+	if err != nil {
+		return err
+	}
+	for _, entry := range all {
+		if entry.IsDir() {
+			err := entry.Dir().Copy(destDir.PathHandler)
+			if err != nil {
+				return err
+			}
+		} else {
+			_, err := entry.File().Copy(destDir)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (d *Dir) HasDir(name string) bool {
@@ -201,12 +228,15 @@ func (d Dir) forEach(recursive bool, handler func(PathHandler)) {
 	}
 }
 
-func (d *Dir) CreateDir(name string) Dir {
+func (d *Dir) CreateDir(name string) (Dir, error) {
 	//create the dir inside d
 	path := PathHandler(filepath.Join(d.String(), name))
 	dir := path.Dir()
-	dir.CreateIfNotExist()
-	return dir
+	err := dir.CreateIfNotExist()
+	if err != nil {
+		return Dir{}, err
+	}
+	return dir, nil
 }
 
 func (d *Dir) CreateFile(name string, overwrite bool) (File, error) {
@@ -220,17 +250,24 @@ func (d *Dir) CreateFile(name string, overwrite bool) (File, error) {
 	return file, nil
 }
 
-func (d *Dir) CreateFileWithData(name string, data []byte, overwrite bool) File {
-	// create the file inside d
-	file := NewFile(PathHandler(filepath.Join(d.String(), name)))
+func (d *Dir) CreateFileWithData(name string, data []byte, overwrite bool) (File, error) {
+	file := Join(d.String(), name).File()
 	err := file.Create(overwrite)
 	if err != nil {
-		return File{}
+		return File{}, err
 	}
+	err = file.Write(data)
+	if err != nil {
+		return File{}, err
+	}
+	return file, nil
 }
 
 func (d *Dir) CreateFileWithString(name string, data string, overwrite bool) File {
-
+	file := Join(d.String(), name).File()
+	file.Create(overwrite)
+	file.WriteString(data)
+	return file
 }
 
 func getTree(p Dir) DirStructure {
@@ -262,9 +299,6 @@ func (d *Dir) GetAllPathExists() []PathHandler {
 		for _, entry := range all {
 			paths = append(paths, entry)
 			if entry.IsDir() {
-				// get all the path inside the dir
-				// and append to the all
-				// and return the all
 				entryDir := entry.Dir()
 				entryPaths := entryDir.GetAllPathExists()
 				paths = append(paths, entryPaths...)
