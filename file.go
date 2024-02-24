@@ -14,13 +14,13 @@ func NewFile(path PathHandler) File {
 	return File{path}
 }
 
-func (f *File) Size() (int64, error) {
+func (f File) Size() (int64, error) {
 	// get the file size
 	stat, err := os.Stat(f.String())
 	return stat.Size(), err
 }
 
-func (f *File) Delete() error {
+func (f File) Delete() error {
 	err := os.Remove(f.String())
 	return err
 }
@@ -50,7 +50,7 @@ func (f *File) Copy(destDir Dir) (File, error) {
 	return destFilePath.File(), nil
 }
 
-func (f *File) Create(overwrite bool) error {
+func (f File) Create(overwrite bool) error {
 	if f.IsFile() || f.Exists() {
 		if overwrite {
 			f.Delete()
@@ -62,11 +62,11 @@ func (f *File) Create(overwrite bool) error {
 	return err
 }
 
-func (f *File) CreateIfNotExists() error {
+func (f File) CreateIfNotExists() error {
 	return f.Create(false)
 }
 
-func (f *File) Read() ([]byte, error) {
+func (f File) Read() ([]byte, error) {
 	if f.Exists() && f.IsFile() {
 		data, err := os.ReadFile(f.String())
 		return data, err
@@ -74,7 +74,7 @@ func (f *File) Read() ([]byte, error) {
 	return nil, os.ErrNotExist
 }
 
-func (f *File) ChunkReader(size int64) (func() ([]byte, error, bool), func() error, error) {
+func (f File) ChunkReader(size int64) (func() ([]byte, error, bool), func() error, error) {
 	if f.Exists() && f.IsFile() {
 		file, err := os.Open(f.String())
 		if err != nil {
@@ -95,7 +95,7 @@ func (f *File) ChunkReader(size int64) (func() ([]byte, error, bool), func() err
 	return nil, nil, os.ErrNotExist
 }
 
-func (f *File) ReadString() (string, error) {
+func (f File) ReadString() (string, error) {
 	if f.Exists() && f.IsFile() {
 		data, err := os.ReadFile(f.String())
 		return string(data), err
@@ -103,7 +103,7 @@ func (f *File) ReadString() (string, error) {
 	return "", os.ErrNotExist
 }
 
-func (f *File) IterateLine() (func() (string, error), error) {
+func (f File) IterateLine() (func() (string, error), error) {
 	if f.Exists() && f.IsFile() {
 		file, err := os.Open(f.String())
 		if err != nil {
@@ -121,25 +121,18 @@ func (f *File) IterateLine() (func() (string, error), error) {
 	return nil, os.ErrNotExist
 }
 
-func (f *File) Write(data []byte, perm os.FileMode) error {
-	// write data to the file
-	err := os.WriteFile(f.String(), data, perm)
-	return err
-}
-
-func (f *File) WriteString(data string, perm os.FileMode) error {
-	return f.Write([]byte(data), perm)
-}
-
-func (f *File) Append(data []byte) error {
-	// append data to the file
+func (f File) Write(data []byte) error {
 	err := os.WriteFile(f.String(), data, 0644)
 	return err
 }
 
-func (f *File) AppendString(data string, newLine bool) error {
+func (f File) WriteString(data string) error {
+	return f.Write([]byte(data))
+}
+
+func (f File) AppendString(data string, newLine bool) error {
 	// Open the file in append mode
-	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
@@ -147,7 +140,7 @@ func (f *File) AppendString(data string, newLine bool) error {
 
 	// If newLine is true, add a newline character to the data
 	if newLine {
-		data += "\n"
+		data = "\n" + data
 	}
 
 	// Write the data to the file
@@ -158,9 +151,9 @@ func (f *File) AppendString(data string, newLine bool) error {
 	return nil
 }
 
-func (f *File) AppendIterative() (func(data []byte) error, error) {
+func (f File) AppendIterative() (func(data []byte) error, error) {
 	// Open the file in append mode
-	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
