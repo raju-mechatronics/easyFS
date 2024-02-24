@@ -47,6 +47,9 @@ func (f File) Copy(destDir Dir) (File, error) {
 		return File{}, err
 	}
 	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		return File{}, err
+	}
 	return destFilePath.File(), nil
 }
 

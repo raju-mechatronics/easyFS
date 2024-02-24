@@ -28,11 +28,8 @@ func IsValidFileName(name string) bool {
 	invalidCharsRegex := regexp.MustCompile(`[<>:"/\\|?*\x00-\x1F]`)
 
 	// Check if name contains invalid characters
-	if invalidCharsRegex.MatchString(name) {
-		return false
-	}
+	return !invalidCharsRegex.MatchString(name)
 
-	return true
 }
 
 func Join(path string, names ...string) PathHandler {
