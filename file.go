@@ -25,7 +25,7 @@ func (f File) Delete() error {
 	return err
 }
 
-func (f *File) Copy(destDir Dir) (File, error) {
+func (f File) Copy(destDir Dir) (File, error) {
 	// copy the file to the new path
 	var srcFile *os.File
 	if f.Exists() && f.IsFile() {
