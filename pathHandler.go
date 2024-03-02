@@ -72,12 +72,12 @@ func (p PathHandler) IsFile() bool {
 //
 //	path := gofs.PathHandler("/path/to/symlink")
 //	isSymlink, err := path.IsSymlink() // true, nil if it's a symlink, otherwise false, error
-func (p PathHandler) IsSymlink() (bool, error) {
+func (p PathHandler) IsSymlink() bool {
 	info, err := os.Lstat(p.String())
 	if err != nil {
-		return false, err
+		return false
 	}
-	return info.Mode()&os.ModeSymlink != 0, nil
+	return info.Mode()&os.ModeSymlink != 0
 }
 
 // Stat returns the FileInfo structure describing the file.
@@ -144,8 +144,9 @@ func (p PathHandler) Name() string {
 //
 //	path := gofs.PathHandler("/path/to/file.txt")
 //	parent := path.Parent() // returns "/path/to"
-func (p PathHandler) Parent() string {
-	return filepath.Dir(p.String())
+func (p PathHandler) Parent() Dir {
+	parent := filepath.Dir(p.String())
+	return Dir{PathHandler(parent)}
 }
 
 // Ext returns the file extension of the path.
@@ -237,9 +238,9 @@ func (p PathHandler) Dir() Dir {
 
 func (p *PathHandler) Rename(newName string) error {
 	//rename the dir
-	err := os.Rename(p.String(), string(Join(p.Parent(), newName)))
+	err := os.Rename(p.String(), string(Join(p.Parent().String(), newName)))
 	if err == nil {
-		newHandler := Join(p.Parent(), newName)
+		newHandler := Join(p.Parent().String(), newName)
 		*p = newHandler
 	}
 	return err
