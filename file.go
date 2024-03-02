@@ -47,6 +47,9 @@ func (f File) Copy(destDir Dir) (File, error) {
 		return File{}, err
 	}
 	_, err = io.Copy(destFile, srcFile)
+	// close the files
+	srcFile.Close()
+	destFile.Close()
 	if err != nil {
 		return File{}, err
 	}
@@ -61,7 +64,10 @@ func (f File) Create(overwrite bool) error {
 			return nil
 		}
 	}
-	_, err := os.Create(f.String())
+	file, err := os.Create(f.String())
+	if err == nil {
+		file.Close()
+	}
 	return err
 }
 
@@ -109,6 +115,7 @@ func (f File) ReadString() (string, error) {
 func (f File) IterateLine() (func() (string, error), error) {
 	if f.Exists() && f.IsFile() {
 		file, err := os.Open(f.String())
+		defer file.Close()
 		if err != nil {
 			return nil, err
 		}
@@ -136,6 +143,7 @@ func (f File) WriteString(data string) error {
 func (f File) AppendString(data string, newLine bool) error {
 	// Open the file in append mode
 	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_WRONLY, 0644)
+	defer file.Close()
 	if err != nil {
 		return err
 	}
@@ -157,6 +165,7 @@ func (f File) AppendString(data string, newLine bool) error {
 func (f File) AppendIterative() (func(data []byte) error, error) {
 	// Open the file in append mode
 	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_WRONLY, 0644)
+	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +183,7 @@ func (f File) AppendIterative() (func(data []byte) error, error) {
 func (f *File) AppendStringIterative() (func(data string) error, error) {
 	// Open the file in append mode
 	file, err := os.OpenFile(f.String(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
