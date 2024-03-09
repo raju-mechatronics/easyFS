@@ -88,5 +88,43 @@ func TestPathHandler(t *testing.T) {
 	// p.exists() false
 	if p.Exists() {
 		t.Error("Path should not exist")
+
 	}
+
+	//test rename
+	nP := PathHandler("testpath").Dir()
+	nP.CreateIfNotExist()
+	dir1, err1 := nP.CreateDir("testdir1")
+	dir2, err2 := nP.CreateDir("testdir2")
+	if err1 != nil || err2 != nil {
+		t.Error(err1, err2)
+	}
+	dir1.Rename("testdir3")
+	if dir1.String() == "testdir3" && !dir1.Exists() {
+		t.Error("Rename failed")
+	}
+	//move dir1 to dir2
+	dir1.Move(dir2.PathHandler)
+	if dir1.Parent().String() != dir2.String() {
+		t.Error("Move failed")
+	}
+
+	//change permission
+	errPerm := dir2.SetPerm(0777)
+	if errPerm != nil {
+		t.Error(errPerm)
+	}
+	//remove nP
+	err = nP.Delete(true)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDir(t *testing.T) {
+
+}
+
+func TestFile(t *testing.T) {
+
 }
