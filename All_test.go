@@ -2,6 +2,7 @@ package gofs
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -125,6 +126,89 @@ func TestDir(t *testing.T) {
 
 }
 
-func TestFile(t *testing.T) {
+// func to generate random string
+func randString(n int) string {
+	var letterRunes = []rune(" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, n)
+	for i := range b {
+		if i%100 == 0 {
+			b[i] = '\n'
+			continue
+		}
+		randomInt := rand.Int() % len(letterRunes)
+		b[i] = letterRunes[randomInt]
+	}
+	return string(b)
+}
 
+func TestFile(t *testing.T) {
+	dir := NewDir("testdir")
+	//delete dir
+	dir.Delete(true)
+	fileName := NewFile("testfile.ext")
+	dir.CreateIfNotExist()
+	file := dir.Join(fileName.Name()).File()
+	fmt.Println("file:", file.String())
+	err := file.CreateIfNotExists()
+	if err != nil {
+		t.Error(err)
+	}
+	random_string := randString(100000)
+	err = file.WriteString(random_string)
+	if err != nil {
+		t.Error("write failed", err)
+	}
+
+	// file.exists() true
+	size, err := file.Size()
+	if err != nil {
+		t.Error(err)
+	}
+	if size <= 0 {
+		t.Error("File size should be greater than 0")
+	}
+
+	// file read
+	data, err := file.ReadString()
+
+	if err != nil {
+		t.Error("Reading Failed", err)
+	}
+
+	subDir := dir.Join("subdir").Dir()
+	subDir.CreateIfNotExist()
+
+	if data != random_string {
+		t.Error("ReadString failed")
+	}
+
+	file.Copy(subDir)
+
+	data, err = file.ReadString()
+	if err != nil {
+		t.Error("Reading Failed", err)
+	}
+
+	if data != random_string {
+		t.Error("Copy data is not matched with original failed")
+	}
+
+	// file readline
+	reader, _, err := file.ChunkReader(100)
+
+	if err != nil {
+		t.Error("Reading Failed", err)
+	}
+	i := 0
+	for subData, err, finished := reader(); !finished && err == nil; subData, err, finished = reader() {
+		if string(subData) != random_string[i*100:i*100+100] {
+			t.Error("line data is not matched with original failed got:", string(subData), "expected:", random_string[i:i+100])
+		}
+		i++
+	}
+	if err != nil {
+		t.Error("Reading Failed", err)
+	}
+	//delete dir
+	dir.Delete(true)
 }
