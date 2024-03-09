@@ -10,6 +10,10 @@ type Dir struct {
 	PathHandler
 }
 
+func NewDir(path PathHandler) Dir {
+	return Dir{path}
+}
+
 // DirStructure represents the structure of a directory.
 type DirStructure struct {
 	Dirs  map[string]DirStructure
