@@ -51,7 +51,6 @@ func (f File) Copy(destDir Dir) (File, error) {
 		if err != nil {
 			return File{}, err
 		}
-		defer srcFile.Close()
 
 		err = destDir.CreateIfNotExist()
 		if err != nil {
