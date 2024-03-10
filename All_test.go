@@ -228,6 +228,9 @@ func TestDir(t *testing.T) {
 		t.Error("Testing hasfile failed. got:", err)
 	}
 
+	//delete dir for
+	dir.Delete(true)
+
 }
 
 // func to generate random string
