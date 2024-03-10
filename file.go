@@ -1,4 +1,4 @@
-package gofs
+package easyFS
 
 import (
 	"bufio"

@@ -1,4 +1,4 @@
-package gofs
+package easyFS
 
 import (
 	"os"
@@ -331,7 +331,7 @@ func (d Dir) FindDir(match string, recursive bool, quantity int) []Dir {
 	}
 }
 
-// CreateDir creates a subdirectory within the directory.
+// CreateSubdir creates a subdirectory within the directory.
 //
 // Args:
 //   - name: Name of the subdirectory to create.
@@ -343,8 +343,8 @@ func (d Dir) FindDir(match string, recursive bool, quantity int) []Dir {
 // Example:
 //
 //	dir := Dir{"/path/to/directory"}
-//	subdir, err := dir.CreateDir("subdir")
-func (d *Dir) CreateDir(name string) (Dir, error) {
+//	subdir, err := dir.CreateSubdir("subdir")
+func (d Dir) CreateSubdir(name string) (Dir, error) {
 	//create the dir inside d
 	path := PathHandler(filepath.Join(d.String(), name))
 	dir := path.Dir()

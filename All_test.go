@@ -1,4 +1,4 @@
-package gofs
+package easyFS
 
 import (
 	"fmt"
@@ -55,7 +55,11 @@ func TestPathHandler(t *testing.T) {
 	}
 	fmt.Println("if abs then passed else did not passed", absPath)
 	// p.resolve()
-	file.Resolve()
+	resolve, err := file.Resolve()
+	if err != nil {
+		return
+	}
+	fmt.Println("if resolved then passed else did not passed", resolve)
 	// p.isAbsolute() true
 	if !file.IsAbs() {
 		t.Error("Path should be absolute got:", file.String())
@@ -95,8 +99,8 @@ func TestPathHandler(t *testing.T) {
 	//test rename
 	nP := PathHandler("testpath").Dir()
 	nP.CreateIfNotExist()
-	dir1, err1 := nP.CreateDir("testdir1")
-	dir2, err2 := nP.CreateDir("testdir2")
+	dir1, err1 := nP.CreateSubdir("testdir1")
+	dir2, err2 := nP.CreateSubdir("testdir2")
 	if err1 != nil || err2 != nil {
 		t.Error(err1, err2)
 	}
@@ -123,6 +127,106 @@ func TestPathHandler(t *testing.T) {
 }
 
 func TestDir(t *testing.T) {
+	dir := NewDir("testdir")
+	//delete dir
+	dir.Delete(true)
+	// dir.exists() false
+	if dir.Exists() {
+		t.Error("Dir should not exist")
+	}
+	dir.CreateIfNotExist()
+	// dir.exists() true
+	if !dir.Exists() {
+		t.Error("Dir should exist")
+	}
+	//dir.isDir() true
+	if !dir.IsDir() {
+		t.Error("Dir should be a directory")
+	}
+	// dir.createdir
+	dir1, err1 := dir.CreateSubdir("testdir1")
+	if err1 != nil {
+		t.Error("failed create subdir:", err1)
+	}
+	dir2, err2 := dir.CreateSubdir("testdir2")
+	if err2 != nil {
+		t.Error("failed create subdir:", err2)
+	}
+	dir3, err3 := dir.CreateSubdir("testdir3")
+	if err3 != nil {
+		t.Error("failed create subdir:", err3)
+	}
+	file1, ferr1 := dir.CreateFile("testfile1.ext", false)
+	if ferr1 != nil {
+		t.Error("failed create file:", ferr1)
+	}
+	file2, ferr2 := dir.CreateFile("testfile2.ext", false)
+	if ferr2 != nil {
+		t.Error("failed create file:", ferr2)
+	}
+	file3, ferr3 := dir.CreateFile("testfile3.ext", false)
+	if ferr3 != nil {
+		t.Error("failed create file:", ferr3)
+	}
+	fmt.Println(dir3, file1, file2, file3)
+
+	all, err := dir.All()
+	if err != nil {
+		t.Error("Testing All failed. got:", err)
+	}
+	if len(all) != 6 {
+		t.Error("Testing All failed. got:", len(all))
+	}
+	// test file
+	files, err := dir.Files()
+	if err != nil {
+		t.Error("Testing Files failed. got:", err)
+	}
+	if len(files) != 3 {
+		t.Error("Testing Files failed. got:", len(files))
+	}
+	// test dir
+	dirs, err := dir.Dirs()
+	if err != nil {
+		t.Error("Testing Dirs failed. got:", err)
+	}
+	if len(dirs) != 3 {
+		t.Error("Testing Dirs failed. got:", len(dirs))
+	}
+	// test delete
+	err = dir1.Delete(true)
+	if err != nil {
+		t.Error("Testing delete failed. got:", err)
+	}
+	if dir1.Exists() {
+		t.Error("Testing delete failed. got:", err)
+	}
+	// test delete subdir
+	err = dir.DeleteSubDir("testdir2", true)
+	if err != nil {
+		t.Error("Testing delete subdir failed. got:", err)
+	}
+	if dir2.Exists() {
+		t.Error("Testing delete subdir failed. got:", err)
+	}
+	// test delete file
+	err = dir.DeleteSubFile("testfile3.ext")
+	if err != nil {
+		t.Error("Testing delete file failed. got:", err)
+	}
+	if file3.Exists() {
+		t.Error("Testing delete file failed. got:", err)
+
+	}
+
+	// test hasdir
+	if !dir.HasDir("testdir3") {
+		t.Error("Testing hasdir failed. got:", err)
+	}
+	// test hasfile
+	if !dir.HasFile("testfile2.ext") {
+		t.Error("Testing hasfile failed. got:", err)
+	}
 
 }
 
