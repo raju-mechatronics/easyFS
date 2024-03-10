@@ -18,7 +18,7 @@ EasyFS provides the following features:
 To use EasyFS in your Go projects, simply import it using Go modules:
 
 ```bash
-go get github.com/raju-mechatronics/EasyFS
+go get github.com/raju-mechatronics/easyFS
 ```
 
 ## Usage
@@ -30,12 +30,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/raju-mechatronics/EasyFS"
+	"github.com/raju-mechatronics/easyFS"
 )
 
 func main() {
 	// Create a directory
-	dir := EasyFS.NewDir("/path/to/directory")
+	dir := easyFS.NewDir("/path/to/directory")
 	err := dir.CreateIfNotExist()
 	if err != nil {
 		fmt.Println("Error creating directory:", err)
@@ -60,7 +60,7 @@ func main() {
 
 # EasyFS Documentation
 
-## Package `EasyFS`
+## Package `easyFS`
 
 ### Struct `PathHandler`
 
@@ -144,15 +144,8 @@ Represents a file in the file system. Also Inherit the Path Handler. all the met
 - `AppendStringIterative() (func(data string) error, error)`: Appends a string to the file iteratively.
 
 ## ⚠️ Attention
-
-**Note**: EasyFS is still under active development and may not be fully tested or completed yet. While the library offers a range of functionalities for interacting with the file system in Go, there may be areas that require further refinement or optimization.
-
-**Community Help**: We welcome contributions from the community to help improve EasyFS. If you encounter any bugs, issues, or have suggestions for enhancements, please don't hesitate to open an issue or submit a pull request on our [GitHub repository](https://github.com/your/repository).
-
-**Testing**: Although we strive to ensure the stability and reliability of EasyFS, it's important to note that thorough testing is ongoing. As such, we recommend exercising caution when using the library in production environments or mission-critical projects.
-
-Thank you for your understanding and support as we work towards making EasyFS a robust and reliable tool for file system operations in Go.
-
+Although we strive to ensure the stability and reliability of EasyFS, it's important to note that thorough testing is ongoing. As such, we recommend exercising caution when using the library in production environments or mission-critical projects.
+**Community Help**: We welcome contributions from the community to help improve EasyFS. If you encounter any bugs, issues, or have suggestions for enhancements, please don't hesitate to open an issue or submit a pull request.
 
 ## Compatibility
 
