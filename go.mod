@@ -1,3 +1,3 @@
-module gofs
+module github.com/raju-mechatronics/easyFS
 
-go 1.21
+go 1.22.0
